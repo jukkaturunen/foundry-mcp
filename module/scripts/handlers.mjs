@@ -130,11 +130,48 @@ function expand(obj) {
   return out;
 }
 
+
+// ---- Files ----
+
+const normPath = (p) => decodeURIComponent(String(p)).replace(/^\/+|\/+$/g, "");
+
+/** Create a directory in the "data" source, including missing parents. */
+export async function ensureDir(FilePicker, dir) {
+  const parts = normPath(dir).split("/").filter(Boolean);
+  let parent = "";
+  for (const part of parts) {
+    const current = parent ? `${parent}/${part}` : part;
+    const listing = await FilePicker.browse("data", parent);
+    const exists = (listing?.dirs ?? []).some((d) => normPath(d) === current);
+    if (!exists) await FilePicker.createDirectory("data", current, {});
+    parent = current;
+  }
+  return parent;
+}
+
+/** Pick a file name that does not exist yet in the listing (image.png, image-1.png, ...). */
+export function uniqueName(existingFiles, dir, fileName) {
+  const taken = new Set((existingFiles ?? []).map(normPath));
+  const dot = fileName.lastIndexOf(".");
+  const stem = dot > 0 ? fileName.slice(0, dot) : fileName;
+  const ext = dot > 0 ? fileName.slice(dot) : "";
+  let name = fileName;
+  for (let i = 1; taken.has(`${dir}/${name}`); i++) name = `${stem}-${i}${ext}`;
+  return name;
+}
+
+async function base64ToFile(data, fileName, mime) {
+  const bin = atob(data);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new File([bytes], fileName, { type: mime });
+}
+
 const SCENE_FIELDS = ["name", "folder", "width", "height", "navigation"];
 
 /**
  * @param game  The Foundry `game` object.
- * @param docs  Document classes: { Scene, JournalEntry }.
+ * @param docs  Classes from Foundry: { Scene, JournalEntry, FilePicker }.
  */
 export function createHandlers(game, docs = {}) {
   return {
@@ -239,6 +276,23 @@ export function createHandlers(game, docs = {}) {
       const name = page.name;
       await page.delete();
       return { deleted: true, journalId, pageId, name };
+    },
+
+    // ---- Files ----
+
+    /** Upload a base64-encoded file into the "data" source. Returns its path for use in scenes and journals. */
+    async "files.upload"({ dir, fileName, mime, data, overwrite = false }) {
+      const FilePicker = docs.FilePicker;
+      const target = await ensureDir(FilePicker, dir);
+      let name = fileName;
+      if (!overwrite) {
+        const listing = await FilePicker.browse("data", target);
+        name = uniqueName(listing?.files, target, fileName);
+      }
+      const file = await base64ToFile(data, name, mime);
+      const res = await FilePicker.upload("data", target, file, {}, { notify: false });
+      if (!res || res.status === "error" || res === false) throw new Error(res?.message ?? "Upload failed");
+      return { path: res.path ?? `${target}/${name}` };
     },
   };
 }

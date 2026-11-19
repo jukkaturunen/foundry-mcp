@@ -26,8 +26,14 @@ The tools work only while the world is open in a browser as a GM. The connection
 | `list_journals`, `get_journal` | Journal entries with folder and pages (`get_journal` includes page HTML) |
 | `create_journal`, `update_journal`, `delete_journal` | Create (optionally with pages), rename/move or delete a journal entry |
 | `create_journal_page`, `update_journal_page`, `delete_journal_page` | Text pages (HTML) and image pages |
+| `upload_image` | Upload an image from your computer into Foundry's data storage and get its path |
+| `create_scene_from_image` | Upload an image and create a scene with it as background, sized to the image |
+| `set_scene_background_from_file` | Upload an image and make it an existing scene's background (resizes the scene by default) |
+| `add_journal_image_from_file` | Upload an image and add it as an image page to a journal entry |
 
-Folders are given by id for now. Coming next: uploading local images into scenes and journals, and folder tools.
+Uploads go to `worlds/<world>/mcp-uploads/{images,scenes,journal}` unless you give `targetDir`. Existing files are not overwritten: a `-1`, `-2`, … suffix is added unless `overwrite` is set. Max image size is 50 MB.
+
+Folders are given by id for now. Coming next: folder tools.
 
 ## Setup
 

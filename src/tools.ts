@@ -72,7 +72,7 @@ export function registerTools(server: McpServer, bridge: FoundryBridge): void {
     .string()
     .nullable()
     .optional()
-    .describe("Folder id (from Foundry). null moves it out of any folder.");
+    .describe('Folder id, name or path like "Maps/Dungeons". null moves it out of any folder.');
   const sceneFields = {
     width: z.number().int().positive().optional().describe("Scene width in pixels"),
     height: z.number().int().positive().optional().describe("Scene height in pixels"),
@@ -345,5 +345,74 @@ export function registerTools(server: McpServer, bridge: FoundryBridge): void {
         });
         return { uploaded: img, page };
       }),
+  );
+
+  // ---- Folders ----
+
+  const folderType = z.enum(["Scene", "JournalEntry"]);
+  const folderRef = z.string().min(1).describe('Folder id, name or path like "Maps/Dungeons"');
+
+  server.registerTool(
+    "list_folders",
+    {
+      title: "List folders",
+      description: "List scene and journal folders with their path, parent, color and how many documents and subfolders they hold.",
+      inputSchema: { type: folderType.optional().describe("Only folders of this type") },
+      annotations: { readOnlyHint: true },
+    },
+    (args) => call(bridge, "folders.list", args),
+  );
+
+  server.registerTool(
+    "get_folder",
+    {
+      title: "Get folder",
+      description: "Get one folder with its subfolders and the scenes or journal entries in it.",
+      inputSchema: { id: folderRef, type: folderType.optional().describe("Helps when a name matches folders of both types") },
+      annotations: { readOnlyHint: true },
+    },
+    (args) => call(bridge, "folders.get", args),
+  );
+
+  server.registerTool(
+    "create_folder",
+    {
+      title: "Create folder",
+      description: "Create a scene or journal folder, optionally inside another folder of the same type.",
+      inputSchema: {
+        name: z.string().min(1),
+        type: folderType,
+        parent: folderRef.optional(),
+        color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().describe("Color like #336699"),
+      },
+    },
+    (args) => call(bridge, "folders.create", args),
+  );
+
+  server.registerTool(
+    "update_folder",
+    {
+      title: "Update folder",
+      description: "Rename a folder, change its color or move it under another folder (parent null moves it to the top level).",
+      inputSchema: {
+        id: folderRef,
+        name: z.string().min(1).optional(),
+        parent: z.string().min(1).nullable().optional().describe("New parent folder id, name or path; null for top level"),
+        color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+      },
+    },
+    (args) => call(bridge, "folders.update", args),
+  );
+
+  server.registerTool(
+    "delete_folder",
+    {
+      title: "Delete folder",
+      description:
+        "Delete a folder. By default its scenes/journals and subfolders are kept and move up a level. With deleteContents: true, everything inside is permanently deleted too.",
+      inputSchema: { id: folderRef, deleteContents: z.boolean().optional() },
+      annotations: { destructiveHint: true },
+    },
+    (args) => call(bridge, "folders.delete", args),
   );
 }

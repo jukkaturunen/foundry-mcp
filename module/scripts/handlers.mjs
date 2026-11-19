@@ -17,17 +17,89 @@ function pick(obj, keys) {
   return out;
 }
 
-function folderInfo(game, folderId) {
-  if (!folderId) return null;
-  const folder = game.folders?.get(folderId);
-  return { id: folderId, name: folder?.name ?? null };
+/** All Folder documents, from a Foundry collection or a Map (tests). */
+function allFolders(game) {
+  const f = game.folders;
+  if (!f) return [];
+  return f.contents ?? [...f.values()];
 }
 
-function checkFolder(game, folderId, type) {
-  if (!folderId) return;
-  const folder = game.folders?.get(folderId);
-  if (!folder) throw new Error(`Folder not found: ${folderId}`);
-  if (folder.type && folder.type !== type) throw new Error(`Folder ${folderId} holds ${folder.type} documents, not ${type}`);
+function folderId(folder) {
+  return folder.id ?? folder._id ?? sourceOf(folder)._id;
+}
+
+/** "Parent/Child" path of a folder, following parent ids. */
+export function folderPath(game, folder) {
+  const names = [];
+  let current = folder;
+  for (let i = 0; current && i < 10; i++) {
+    const data = sourceOf(current);
+    names.unshift(data.name ?? current.name);
+    current = data.folder ? game.folders.get(data.folder) : null;
+  }
+  return names.join("/");
+}
+
+function folderInfo(game, id) {
+  if (!id) return null;
+  const folder = game.folders?.get(id);
+  return { id, name: folder?.name ?? null, path: folder ? folderPath(game, folder) : null };
+}
+
+/**
+ * Resolve a folder reference to an id. Accepts an id, a name, or a path like
+ * "Maps/Dungeons". null/"" means "no folder"; undefined means "not given".
+ */
+export function resolveFolder(game, ref, type) {
+  if (ref === undefined || ref === null || ref === "") return ref === undefined ? undefined : null;
+  const byId = game.folders?.get(ref);
+  if (byId) {
+    const t = sourceOf(byId).type ?? byId.type;
+    if (type && t && t !== type) throw new Error(`Folder "${byId.name}" holds ${t} documents, not ${type}`);
+    return ref;
+  }
+  const want = String(ref).replace(/^\/+|\/+$/g, "");
+  const candidates = allFolders(game).filter((f) => !type || (sourceOf(f).type ?? f.type) === type);
+  let matches = candidates.filter((f) => folderPath(game, f) === want);
+  if (!matches.length) matches = candidates.filter((f) => (sourceOf(f).name ?? f.name) === want);
+  if (!matches.length) throw new Error(`Folder not found: ${ref}`);
+  if (matches.length > 1) {
+    throw new Error(`Several ${type ?? ""} folders match "${ref}": ${matches.map((f) => `${folderPath(game, f)} (${folderId(f)})`).join(", ")}. Use the id.`);
+  }
+  return folderId(matches[0]);
+}
+
+const FOLDER_TYPES = { Scene: "scenes", JournalEntry: "journal" };
+
+function summarizeFolder(game, folder, { contents = false } = {}) {
+  const data = sourceOf(folder);
+  const id = folderId(folder);
+  const type = data.type ?? folder.type;
+  const children = allFolders(game).filter((f) => sourceOf(f).folder === id);
+  const collection = game[FOLDER_TYPES[type]];
+  const docs = collection ? collection.contents.filter((d) => sourceOf(d).folder === id) : [];
+  const out = {
+    id,
+    name: data.name ?? folder.name,
+    type,
+    path: folderPath(game, folder),
+    parent: data.folder ? folderInfo(game, data.folder) : null,
+    color: data.color ?? null,
+    subfolderCount: children.length,
+    documentCount: docs.length,
+  };
+  if (contents) {
+    out.subfolders = children.map((f) => ({ id: folderId(f), name: sourceOf(f).name ?? f.name }));
+    out.documents = docs.map((d) => ({ id: sourceOf(d)._id, name: sourceOf(d).name }));
+  }
+  return out;
+}
+
+function getFolder(game, ref, type) {
+  const id = resolveFolder(game, ref, type);
+  const folder = id && game.folders.get(id);
+  if (!folder) throw new Error(`Folder not found: ${ref}`);
+  return folder;
 }
 
 function getScene(game, id) {
@@ -171,7 +243,7 @@ const SCENE_FIELDS = ["name", "folder", "width", "height", "navigation"];
 
 /**
  * @param game  The Foundry `game` object.
- * @param docs  Classes from Foundry: { Scene, JournalEntry, FilePicker }.
+ * @param docs  Classes from Foundry: { Scene, JournalEntry, Folder, FilePicker }.
  */
 export function createHandlers(game, docs = {}) {
   return {
@@ -196,8 +268,7 @@ export function createHandlers(game, docs = {}) {
     },
 
     async "scenes.create"(params) {
-      checkFolder(game, params.folder, "Scene");
-      const data = pick(params, SCENE_FIELDS);
+      const data = pick({ ...params, folder: resolveFolder(game, params.folder, "Scene") }, SCENE_FIELDS);
       if (params.gridSize !== undefined) data.grid = { size: params.gridSize };
       const scene = await docs.Scene.create(data);
       if (params.background) await setSceneBackground(scene, params.background);
@@ -206,8 +277,7 @@ export function createHandlers(game, docs = {}) {
 
     async "scenes.update"(params) {
       const scene = getScene(game, params.id);
-      checkFolder(game, params.folder, "Scene");
-      const data = pick(params, SCENE_FIELDS);
+      const data = pick({ ...params, folder: resolveFolder(game, params.folder, "Scene") }, SCENE_FIELDS);
       if (params.gridSize !== undefined) data["grid.size"] = params.gridSize;
       if (Object.keys(data).length) await scene.update(data);
       if (params.background !== undefined) await setSceneBackground(scene, params.background);
@@ -232,8 +302,7 @@ export function createHandlers(game, docs = {}) {
     },
 
     async "journals.create"(params) {
-      checkFolder(game, params.folder, "JournalEntry");
-      const data = pick(params, ["name", "folder"]);
+      const data = pick({ ...params, folder: resolveFolder(game, params.folder, "JournalEntry") }, ["name", "folder"]);
       data.pages = (params.pages ?? []).map((p) => pageData(p));
       const entry = await docs.JournalEntry.create(data);
       return summarizeJournal(game, entry, { full: true });
@@ -241,8 +310,7 @@ export function createHandlers(game, docs = {}) {
 
     async "journals.update"(params) {
       const entry = getJournal(game, params.id);
-      checkFolder(game, params.folder, "JournalEntry");
-      const data = pick(params, ["name", "folder"]);
+      const data = pick({ ...params, folder: resolveFolder(game, params.folder, "JournalEntry") }, ["name", "folder"]);
       if (Object.keys(data).length) await entry.update(data);
       return summarizeJournal(game, entry);
     },
@@ -276,6 +344,45 @@ export function createHandlers(game, docs = {}) {
       const name = page.name;
       await page.delete();
       return { deleted: true, journalId, pageId, name };
+    },
+
+    // ---- Folders ----
+
+    "folders.list"({ type } = {}) {
+      return allFolders(game)
+        .filter((f) => (sourceOf(f).type ?? f.type) in FOLDER_TYPES && (!type || (sourceOf(f).type ?? f.type) === type))
+        .map((f) => summarizeFolder(game, f))
+        .sort((a, b) => a.type.localeCompare(b.type) || a.path.localeCompare(b.path));
+    },
+
+    "folders.get"({ id, type }) {
+      return summarizeFolder(game, getFolder(game, id, type), { contents: true });
+    },
+
+    async "folders.create"({ name, type, parent, color }) {
+      if (!(type in FOLDER_TYPES)) throw new Error(`Unsupported folder type: ${type}`);
+      const data = { name, type };
+      const parentId = resolveFolder(game, parent, type);
+      if (parentId) data.folder = parentId;
+      if (color) data.color = color;
+      const folder = await docs.Folder.create(data);
+      return summarizeFolder(game, folder);
+    },
+
+    async "folders.update"({ id, name, parent, color }) {
+      const folder = getFolder(game, id);
+      const type = sourceOf(folder).type ?? folder.type;
+      const data = pick({ name, color, folder: resolveFolder(game, parent, type) }, ["name", "color", "folder"]);
+      if (data.folder && data.folder === folderId(folder)) throw new Error("A folder cannot be its own parent");
+      if (Object.keys(data).length) await folder.update(data);
+      return summarizeFolder(game, folder);
+    },
+
+    async "folders.delete"({ id, deleteContents = false }) {
+      const folder = getFolder(game, id);
+      const summary = summarizeFolder(game, folder);
+      await folder.delete({ deleteSubfolders: deleteContents, deleteContents });
+      return { deleted: true, id: summary.id, path: summary.path, contentsDeleted: deleteContents };
     },
 
     // ---- Files ----

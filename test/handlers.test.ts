@@ -65,7 +65,7 @@ describe("handlers", () => {
 
   it("lists journals with pages in order", () => {
     const [lore] = h["journals.list"]();
-    expect(lore.folder).toEqual({ id: "f1", name: "Dungeons" });
+    expect(lore.folder).toEqual({ id: "f1", name: "Dungeons", path: "Dungeons" });
     expect(lore.pages.map((p: { id: string }) => p.id)).toEqual(["p1", "p2"]);
   });
 

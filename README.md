@@ -30,10 +30,12 @@ The tools work only while the world is open in a browser as a GM. The connection
 | `create_scene_from_image` | Upload an image and create a scene with it as background, sized to the image |
 | `set_scene_background_from_file` | Upload an image and make it an existing scene's background (resizes the scene by default) |
 | `add_journal_image_from_file` | Upload an image and add it as an image page to a journal entry |
+| `list_folders`, `get_folder` | Scene and journal folders with path, parent and contents |
+| `create_folder`, `update_folder`, `delete_folder` | Create, rename, recolor, move or delete folders. Deleting keeps the contents unless `deleteContents` is set |
 
 Uploads go to `worlds/<world>/mcp-uploads/{images,scenes,journal}` unless you give `targetDir`. Existing files are not overwritten: a `-1`, `-2`, … suffix is added unless `overwrite` is set. Max image size is 50 MB.
 
-Folders are given by id for now. Coming next: folder tools.
+Wherever a tool takes a folder, you can give its id, its name, or its path like `Maps/Dungeons`.
 
 ## Setup
 

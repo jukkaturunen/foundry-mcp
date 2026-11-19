@@ -13,6 +13,7 @@ class BridgeClient {
   handlers = createHandlers(game, {
     Scene: CONFIG.Scene.documentClass,
     JournalEntry: CONFIG.JournalEntry.documentClass,
+    Folder: CONFIG.Folder.documentClass,
     FilePicker: foundry.applications.apps.FilePicker.implementation,
   });
 

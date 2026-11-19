@@ -175,7 +175,7 @@ describe("journals", () => {
       folder: "fj",
       pages: [{ name: "Intro", text: "<p>Hi</p>" }, { src: "img/map.webp", caption: "Map" }],
     });
-    expect(j.folder).toEqual({ id: "fj", name: "Lore" });
+    expect(j.folder).toEqual({ id: "fj", name: "Lore", path: "Lore" });
     expect(j.pages).toEqual([
       { id: expect.any(String), name: "Intro", type: "text", text: "<p>Hi</p>" },
       { id: expect.any(String), name: "Image", type: "image", src: "img/map.webp", caption: "Map" },

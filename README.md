@@ -91,4 +91,4 @@ npm test          # unit tests (bridge + module handlers)
 npm run typecheck
 ```
 
-To release the module, bump `version` in `module/module.json` and push a tag `vX.Y.Z` with the same version. The release workflow publishes `module.json` and `foundry-mcp-bridge.zip`.
+To release the module, bump `version` in `module/module.json`, then either publish a GitHub release with a new tag `vX.Y.Z` (same version) in the GitHub web UI, or push such a tag. The release workflow attaches `module.json` and `foundry-mcp-bridge.zip` to the release.

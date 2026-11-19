@@ -4,7 +4,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { FoundryBridge } from "./bridge.js";
 import { registerTools } from "./tools.js";
 
-const VERSION = "0.2.0";
+const VERSION = "0.2.1";
 
 async function main(): Promise<void> {
   const token = process.env.FOUNDRY_MCP_TOKEN;

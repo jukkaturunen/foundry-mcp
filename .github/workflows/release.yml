@@ -21,11 +21,11 @@ jobs:
           v=$(jq -r .version module/module.json)
           [ "v$v" = "$TAG" ] || { echo "module.json version $v does not match tag $TAG"; exit 1; }
       - name: Build module zip
-        run: cd module && zip -r ../foundry-mcp-bridge.zip module.json scripts lang
+        run: cd module && zip -r ../jt-foundry-mcp-bridge.zip module.json scripts lang
       - name: Create release or add files to it
         run: |
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" foundry-mcp-bridge.zip module/module.json --clobber
+            gh release upload "$TAG" jt-foundry-mcp-bridge.zip module/module.json --clobber
           else
-            gh release create "$TAG" foundry-mcp-bridge.zip module/module.json --title "$TAG" --generate-notes
+            gh release create "$TAG" jt-foundry-mcp-bridge.zip module/module.json --title "$TAG" --generate-notes
           fi

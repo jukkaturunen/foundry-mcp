@@ -33,7 +33,7 @@ export function registerTools(server: McpServer, bridge: FoundryBridge): void {
     },
     async () => {
       if (!bridge.connected) {
-        return ok({ connected: false, hint: "Open the Foundry world in a browser as a GM with the Foundry MCP Bridge module enabled." });
+        return ok({ connected: false, hint: "Open the Foundry world in a browser as a GM with the JT Foundry MCP Bridge module enabled." });
       }
       try {
         return ok({ connected: true, ...(await bridge.request<object>("status")) });

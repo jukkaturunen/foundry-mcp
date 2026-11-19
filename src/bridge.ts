@@ -94,7 +94,7 @@ export class FoundryBridge {
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       return Promise.reject(
         new Error(
-          "Foundry is not connected. Open your Foundry world in a browser as a GM, with the Foundry MCP Bridge module enabled and its token set.",
+          "Foundry is not connected. Open your Foundry world in a browser as a GM, with the JT Foundry MCP Bridge module enabled and its token set.",
         ),
       );
     }

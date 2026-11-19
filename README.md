@@ -21,10 +21,13 @@ The tools work only while the world is open in a browser as a GM. The connection
 | Tool | What it does |
 |---|---|
 | `foundry_status` | Is a world connected, and which one |
-| `list_scenes` | Scenes with folder, size, background image and levels |
-| `list_journals` | Journal entries with folder and pages |
+| `list_scenes`, `get_scene` | Scenes with folder, size, grid, background image and levels |
+| `create_scene`, `update_scene`, `delete_scene` | Create, change or delete a scene. `background` is a path on the Foundry server and is set on the scene's initial level |
+| `list_journals`, `get_journal` | Journal entries with folder and pages (`get_journal` includes page HTML) |
+| `create_journal`, `update_journal`, `delete_journal` | Create (optionally with pages), rename/move or delete a journal entry |
+| `create_journal_page`, `update_journal_page`, `delete_journal_page` | Text pages (HTML) and image pages |
 
-Coming next: create/update/delete for scenes and journals, uploading local images into scenes and journals, and folders.
+Folders are given by id for now. Coming next: uploading local images into scenes and journals, and folder tools.
 
 ## Setup
 

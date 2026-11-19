@@ -10,7 +10,10 @@ class BridgeClient {
   retryMs = MIN_RETRY_MS;
   retryTimer = null;
   stopped = false;
-  handlers = createHandlers(game);
+  handlers = createHandlers(game, {
+    Scene: CONFIG.Scene.documentClass,
+    JournalEntry: CONFIG.JournalEntry.documentClass,
+  });
 
   setting(key) {
     return game.settings.get(MODULE_ID, key);

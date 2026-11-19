@@ -1,0 +1,13 @@
+{
+  "FOUNDRY_MCP": {
+    "Settings": {
+      "Enabled": { "Name": "Connect to MCP server", "Hint": "Connect this browser to the foundry-mcp server. Only GM users connect." },
+      "ServerUrl": { "Name": "MCP server address", "Hint": "WebSocket address of the foundry-mcp server running on this computer." },
+      "Token": { "Name": "Token", "Hint": "The same secret you set as FOUNDRY_MCP_TOKEN for the foundry-mcp server." }
+    },
+    "Connected": "Foundry MCP: connected to the MCP server.",
+    "NoToken": "Foundry MCP: set the token in the module settings to connect.",
+    "BadToken": "Foundry MCP: the MCP server rejected the token. Check the module settings.",
+    "Replaced": "Foundry MCP: another browser tab took over the MCP connection."
+  }
+}

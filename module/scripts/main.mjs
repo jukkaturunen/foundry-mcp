@@ -1,6 +1,6 @@
 import { createHandlers } from "./handlers.mjs";
 
-const MODULE_ID = "foundry-mcp-bridge";
+const MODULE_ID = "jt-foundry-mcp-bridge";
 const MIN_RETRY_MS = 2000;
 const MAX_RETRY_MS = 30000;
 

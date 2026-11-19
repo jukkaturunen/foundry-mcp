@@ -1,0 +1,16 @@
+{
+  "id": "foundry-mcp-bridge",
+  "title": "Foundry MCP Bridge",
+  "description": "Connects a Foundry VTT world (in the GM's browser) to a local foundry-mcp server, so an AI assistant can read and edit scenes, journals and folders and upload images.",
+  "version": "0.1.0",
+  "authors": [{ "name": "jukkaturunen", "url": "https://github.com/jukkaturunen" }],
+  "compatibility": { "minimum": "14", "verified": "14" },
+  "esmodules": ["scripts/main.mjs"],
+  "languages": [
+    { "lang": "en", "name": "English", "path": "lang/en.json" },
+    { "lang": "fi", "name": "Suomi", "path": "lang/fi.json" }
+  ],
+  "url": "https://github.com/jukkaturunen/foundry-mcp",
+  "manifest": "https://github.com/jukkaturunen/foundry-mcp/releases/latest/download/module.json",
+  "download": "https://github.com/jukkaturunen/foundry-mcp/releases/latest/download/foundry-mcp-bridge.zip"
+}

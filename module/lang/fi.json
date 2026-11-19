@@ -1,0 +1,13 @@
+{
+  "FOUNDRY_MCP": {
+    "Settings": {
+      "Enabled": { "Name": "Yhdistä MCP-palvelimeen", "Hint": "Yhdistä tämä selain foundry-mcp-palvelimeen. Vain GM-käyttäjät yhdistävät." },
+      "ServerUrl": { "Name": "MCP-palvelimen osoite", "Hint": "Tällä koneella pyörivän foundry-mcp-palvelimen WebSocket-osoite." },
+      "Token": { "Name": "Tunniste (token)", "Hint": "Sama salaisuus, jonka asetit foundry-mcp-palvelimelle muuttujaan FOUNDRY_MCP_TOKEN." }
+    },
+    "Connected": "Foundry MCP: yhteys MCP-palvelimeen muodostettu.",
+    "NoToken": "Foundry MCP: aseta tunniste moduulin asetuksiin yhdistääksesi.",
+    "BadToken": "Foundry MCP: MCP-palvelin hylkäsi tunnisteen. Tarkista moduulin asetukset.",
+    "Replaced": "Foundry MCP: toinen selainvälilehti otti MCP-yhteyden."
+  }
+}

@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import type { FoundryBridge } from "./bridge.js";
+import type { FoundryConnection } from "./bridge.js";
 import { readLocalImage } from "./images.js";
 
 type ToolResult = { content: { type: "text"; text: string }[]; isError?: boolean };
@@ -14,7 +14,7 @@ function fail(err: unknown): ToolResult {
 }
 
 /** Run a bridge request and wrap the result (or error) as an MCP tool result. */
-async function call(bridge: FoundryBridge, method: string, params: unknown = {}): Promise<ToolResult> {
+async function call(bridge: FoundryConnection, method: string, params: unknown = {}): Promise<ToolResult> {
   try {
     return ok(await bridge.request(method, params));
   } catch (err) {
@@ -22,7 +22,7 @@ async function call(bridge: FoundryBridge, method: string, params: unknown = {})
   }
 }
 
-export function registerTools(server: McpServer, bridge: FoundryBridge): void {
+export function registerTools(server: McpServer, bridge: FoundryConnection & { role?: string }): void {
   server.registerTool(
     "foundry_status",
     {
@@ -33,10 +33,10 @@ export function registerTools(server: McpServer, bridge: FoundryBridge): void {
     },
     async () => {
       if (!bridge.connected) {
-        return ok({ connected: false, hint: "Open the Foundry world in a browser as a GM with the JT Foundry MCP Bridge module enabled." });
+        return ok({ connected: false, ...(bridge.role ? { serverRole: bridge.role } : {}), hint: "Open the Foundry world in a browser as a GM with the JT Foundry MCP Bridge module enabled." });
       }
       try {
-        return ok({ connected: true, ...(await bridge.request<object>("status")) });
+        return ok({ connected: true, ...(bridge.role ? { serverRole: bridge.role } : {}), ...(await bridge.request<object>("status")) });
       } catch (err) {
         return fail(err);
       }

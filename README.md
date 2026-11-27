@@ -88,6 +88,8 @@ claude mcp add foundry --env FOUNDRY_MCP_TOKEN=your-secret -- node /path/to/foun
 
 Optional environment variables: `FOUNDRY_MCP_PORT` (default `37777`) and `FOUNDRY_MCP_HOST` (default `127.0.0.1`).
 
+You can add the server to several MCP clients at once (for example Claude Desktop and Claude Code) with the same token and port. The first one to start listens on the port and holds the Foundry connection; the others connect to it and send their requests through it. If the first one exits, another takes over the port and the Foundry module reconnects to it by itself within a few seconds. `foundry_status` shows `serverRole`: `owner` or `peer`.
+
 ### 5. Connect Foundry
 
 Open your world as a GM in the browser on the same computer. In **Configure Settings → JT Foundry MCP Bridge**, paste the same token. You should see "connected to the MCP server". If the browser asks whether the site may access apps on this device (local network access), allow it.

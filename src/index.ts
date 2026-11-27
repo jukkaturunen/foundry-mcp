@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { FoundryBridge } from "./bridge.js";
+import { SharedBridge } from "./shared.js";
 import { registerTools } from "./tools.js";
 
 const VERSION = "0.3.0";
@@ -15,12 +15,14 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const bridge = new FoundryBridge({
+  // Several MCP clients may run this server at once. The first one owns the port and the
+  // Foundry connection; the others share it, and one of them takes over if the owner exits.
+  const bridge = new SharedBridge({
     host: process.env.FOUNDRY_MCP_HOST ?? "127.0.0.1",
     port: Number(process.env.FOUNDRY_MCP_PORT ?? 37777),
     token,
   });
-  await bridge.start();
+  void bridge.start();
 
   const server = new McpServer({ name: "foundry-mcp", version: VERSION });
   registerTools(server, bridge);

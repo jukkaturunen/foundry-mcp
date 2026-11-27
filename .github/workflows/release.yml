@@ -1,4 +1,4 @@
-name: Release Foundry module
+name: Release
 on:
   push:
     tags: ["v*"]
@@ -16,16 +16,26 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.TAG }}
-      - name: Check module version matches tag
+      - name: Check versions match tag
         run: |
-          v=$(jq -r .version module/module.json)
-          [ "v$v" = "$TAG" ] || { echo "module.json version $v does not match tag $TAG"; exit 1; }
+          for v in "$(jq -r .version module/module.json)" "$(jq -r .version package.json)" \
+                   "$(sed -n 's/^const VERSION = "\(.*\)";/\1/p' src/index.ts)"; do
+            [ "v$v" = "$TAG" ] || { echo "version $v (module.json, package.json or src/index.ts) does not match tag $TAG"; exit 1; }
+          done
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build server tarball and Claude Desktop extension
+        run: npm run release:build && node scripts/smoke.mjs
       - name: Build module zip
         run: cd module && zip -r ../jt-foundry-mcp-bridge.zip module.json scripts lang
       - name: Create release or add files to it
         run: |
+          files="jt-foundry-mcp-bridge.zip module/module.json foundry-mcp.mcpb foundry-mcp.tgz"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" jt-foundry-mcp-bridge.zip module/module.json --clobber
+            gh release upload "$TAG" $files --clobber
           else
-            gh release create "$TAG" jt-foundry-mcp-bridge.zip module/module.json --title "$TAG" --generate-notes
+            gh release create "$TAG" $files --title "$TAG" --generate-notes
           fi

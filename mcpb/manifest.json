@@ -1,0 +1,48 @@
+{
+  "manifest_version": "0.2",
+  "name": "foundry-mcp",
+  "display_name": "Foundry VTT",
+  "version": "0.0.0",
+  "description": "Read and edit your Foundry VTT world: scenes, journals, folders and images.",
+  "long_description": "Connects Claude to a Foundry VTT v14 world through the JT Foundry MCP Bridge module, which runs in the GM's browser tab. Install the module from https://github.com/jukkaturunen/foundry-mcp/releases/latest/download/module.json and put the same token in its settings.",
+  "author": { "name": "jukkaturunen", "url": "https://github.com/jukkaturunen" },
+  "repository": { "type": "git", "url": "https://github.com/jukkaturunen/foundry-mcp" },
+  "homepage": "https://github.com/jukkaturunen/foundry-mcp",
+  "support": "https://github.com/jukkaturunen/foundry-mcp/issues",
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.mjs"],
+      "env": {
+        "FOUNDRY_MCP_TOKEN": "${user_config.token}",
+        "FOUNDRY_MCP_PORT": "${user_config.port}"
+      }
+    }
+  },
+  "tools_generated": true,
+  "user_config": {
+    "token": {
+      "type": "string",
+      "title": "Token",
+      "description": "A secret of at least 16 characters. Put the same value in Foundry: Configure Settings → JT Foundry MCP Bridge.",
+      "sensitive": true,
+      "required": true
+    },
+    "port": {
+      "type": "number",
+      "title": "Port",
+      "description": "Local port the Foundry module connects to. Change only if you changed it in the module too.",
+      "default": 37777,
+      "min": 1024,
+      "max": 65535,
+      "required": false
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": { "node": ">=20.0.0" }
+  }
+}

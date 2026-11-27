@@ -1,11 +1,11 @@
 {
   "name": "foundry-mcp",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "MCP server for Foundry VTT, bridged through a Foundry module running in the GM's browser",
   "type": "module",
   "private": true,
   "bin": {
-    "foundry-mcp": "dist/index.js"
+    "foundry-mcp": "bundle/foundry-mcp.mjs"
   },
   "engines": {
     "node": ">=20"
@@ -14,18 +14,28 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "bundle": "node scripts/bundle.mjs",
+    "pack:mcpb": "node scripts/pack-mcpb.mjs",
+    "release:build": "npm run bundle && npm run pack:mcpb && npm pack && mv foundry-mcp-$npm_package_version.tgz foundry-mcp.tgz"
   },
-  "dependencies": {
+  "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
     "@modelcontextprotocol/sdk": "^1.32.2",
+    "@types/node": "^22.20.5",
+    "@types/ws": "^8.18.2",
+    "esbuild": "^0.28.2",
     "image-size": "^2.1.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.1",
     "ws": "^8.23.0",
     "zod": "^4.6.7"
   },
-  "devDependencies": {
-    "@types/node": "^22.20.5",
-    "@types/ws": "^8.18.2",
-    "typescript": "^5.9.3",
-    "vitest": "^5.1.1"
+  "files": [
+    "bundle/"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jukkaturunen/foundry-mcp"
   }
 }

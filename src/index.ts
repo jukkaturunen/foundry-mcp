@@ -4,7 +4,13 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { SharedBridge } from "./shared.js";
 import { registerTools } from "./tools.js";
 
-const VERSION = "0.3.0";
+const VERSION = "0.4.0";
+
+// Empty or invalid values fall back to the default (an extension may pass "" for an unset option).
+function parsePort(value: string | undefined): number {
+  const port = Number(value);
+  return Number.isInteger(port) && port > 0 && port < 65536 ? port : 37777;
+}
 
 async function main(): Promise<void> {
   const token = process.env.FOUNDRY_MCP_TOKEN;
@@ -18,8 +24,8 @@ async function main(): Promise<void> {
   // Several MCP clients may run this server at once. The first one owns the port and the
   // Foundry connection; the others share it, and one of them takes over if the owner exits.
   const bridge = new SharedBridge({
-    host: process.env.FOUNDRY_MCP_HOST ?? "127.0.0.1",
-    port: Number(process.env.FOUNDRY_MCP_PORT ?? 37777),
+    host: process.env.FOUNDRY_MCP_HOST || "127.0.0.1",
+    port: parsePort(process.env.FOUNDRY_MCP_PORT),
     token,
   });
   void bridge.start();

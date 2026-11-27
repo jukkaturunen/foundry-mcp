@@ -16,3 +16,6 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: node --check module/scripts/main.mjs && node --check module/scripts/handlers.mjs
+      - run: npm run release:build
+      - run: node scripts/smoke.mjs
+      - run: node scripts/smoke.mjs npx -y ./foundry-mcp.tgz
